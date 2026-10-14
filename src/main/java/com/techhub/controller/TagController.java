@@ -1,6 +1,7 @@
 package com.techhub.controller;
 
 import com.techhub.dto.ApiResponse;
+import com.techhub.dto.TagVO;
 import com.techhub.entity.Tag;
 import com.techhub.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,12 @@ public class TagController {
     private final TagRepository tagRepository;
 
     @GetMapping
-    public ApiResponse<List<Tag>> list() {
-        return ApiResponse.ok(tagRepository.findAll());
+    public ApiResponse<List<TagVO>> list() {
+        List<Tag> tags = tagRepository.findAll();
+        return ApiResponse.ok(tags.stream().map(t -> new TagVO(
+                t.getId(),
+                t.getName(),
+                (int) tagRepository.countArticlesByTagId(t.getId())
+        )).toList());
     }
 }

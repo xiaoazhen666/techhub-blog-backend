@@ -144,4 +144,10 @@ public class ArticleService {
         Page<Article> result = articleRepository.findByTagName(tagName, pageable);
         return PageResult.of(result.map(ArticleVO::from));
     }
+
+    public PageResult<ArticleVO> listByAuthor(Long authorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
+        Page<Article> result = articleRepository.findByAuthorId(authorId, pageable);
+        return PageResult.of(result.map(ArticleVO::from));
+    }
 }
