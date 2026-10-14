@@ -10,6 +10,7 @@ import com.techhub.repository.CategoryRepository;
 import com.techhub.repository.CommentRepository;
 import com.techhub.repository.TagRepository;
 import com.techhub.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -29,6 +30,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EntityManager entityManager;
 
     @Override
     @org.springframework.transaction.annotation.Transactional
@@ -39,15 +41,16 @@ public class DataInitializer implements CommandLineRunner {
         }
         log.info("检测到数据不完整（当前 {} 篇文章），重新初始化种子数据...", articleRepository.count());
 
-        // 清空旧数据（按依赖顺序）：先评论，再文章（先清 tags 关联），再 tag、category、user
-        commentRepository.deleteAll();
-        for (Article a : articleRepository.findAll()) {
-            a.getTags().clear();
-        }
-        articleRepository.deleteAll();
-        tagRepository.deleteAll();
-        categoryRepository.deleteAll();
-        userRepository.deleteAll();
+        // 清空旧数据（按依赖顺序），用原生 SQL 硬删除确保彻底落库、避免唯一约束冲突
+        entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM comments").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM article_tags").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM articles").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM tags").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM categories").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM users").executeUpdate();
+        entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate();
+        entityManager.clear();
 
         // ===== 用户 =====
         User admin = User.builder()
