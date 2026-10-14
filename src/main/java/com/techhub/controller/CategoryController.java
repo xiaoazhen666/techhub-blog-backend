@@ -1,7 +1,7 @@
 package com.techhub.controller;
 
 import com.techhub.dto.ApiResponse;
-import com.techhub.entity.Category;
+import com.techhub.dto.CategoryVO;
 import com.techhub.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +18,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ApiResponse<List<Category>> list() {
+    public ApiResponse<List<CategoryVO>> list() {
         return ApiResponse.ok(categoryService.list());
     }
 }
